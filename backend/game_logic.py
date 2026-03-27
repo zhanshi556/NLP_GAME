@@ -1,6 +1,7 @@
 import os
 import json
 import httpx
+import re
 from dotenv import load_dotenv
 
 # 加载环境变量
@@ -104,3 +105,47 @@ async def generate_event(player_state, action):
             "stateChanges": {},
             "nextActions": ["继续探索","修理庇护所","休息"]
         }
+
+
+def extract_entities_from_event(event_text: str, nlu_model=None):
+    """
+    从事件文本中提取新实体（NPC、地点、物品）
+    并添加到 NLU 动态库
+    
+    Args:
+        event_text: AI生成的事件文本
+        nlu_model: NLU模型实例
+    
+    Examples:
+        "You find Sarah, a trader from New Denver..."
+        → NPC: Sarah, LOCATION: New Denver
+    """
+    if not nlu_model:
+        return
+    
+    # 提取 NPC 名字（大写开头的单词）
+    npc_pattern = r'\b([A-Z][a-z]+)\b'
+    npc_matches = re.findall(npc_pattern, event_text)
+    for npc in npc_matches:
+        # 过滤常见非实体词（I, You, The等）
+        if npc not in ["You", "The", "A", "An", "In", "From", "To", "At", "On"]:
+            nlu_model.add_entity("NPC", npc)
+    
+    # 提取地点（包含关键词：city, base, zone, area, settlement等）
+    location_keywords = ["city", "base", "zone", "area", "settlement", "town", "village", "outpost", "camp", "haven"]
+    for keyword in location_keywords:
+        # 查找 "XXX [location_keyword]" 模式
+        pattern = rf'([A-Z][a-z]+)\s+{keyword}'
+        matches = re.findall(pattern, event_text, re.IGNORECASE)
+        for location in matches:
+            nlu_model.add_entity("LOCATION", f"{location} {keyword}")
+    
+    # 提取物品（包含关键词：weapon, tool, supplies等）
+    item_keywords = ["weapon", "tool", "supplies", "medicine", "weapon", "gadget", "device", "equipment"]
+    for keyword in item_keywords:
+        pattern = rf'([a-z\s]+?)\s+{keyword}'
+        matches = re.findall(pattern, event_text, re.IGNORECASE)
+        for item in matches:
+            item_clean = item.strip()
+            if len(item_clean) > 0 and len(item_clean) < 30:  # 合理长度
+                nlu_model.add_entity("ITEM", f"{item_clean} {keyword}")
