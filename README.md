@@ -25,3 +25,20 @@ uvicorn backend.main:app --reload
 ```
 
 Open http://127.0.0.1:8000/docs to test the API.
+# AI末日星座生存游戏
+
+## 技术栈
+- Vue3
+- FastAPI
+- DeepSeek API
+
+## 启动方式
+
+### 后端
+cd backend
+uvicorn main:app --reload
+
+### 前端
+cd frontend
+npm install
+npm run dev
