@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from game_logic import generate_event
+from .game_logic import generate_event
 
 app = FastAPI()
 app.add_middleware(
