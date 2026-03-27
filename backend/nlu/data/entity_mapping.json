@@ -1,0 +1,26 @@
+{
+  "LOCATION": [
+    "supermarket", "hospital", "skyscraper", "police station", "factory",
+    "bunker", "subway tunnel", "gas station", "helicopter", "cemetery",
+    "warehouse", "school", "outpost", "church", "train", "cave", "pharmacy",
+    "laboratory", "forest", "spring", "river", "ruins", "basement", "lakebed",
+    "shelter", "market", "city", "building", "site", "zone", "area"
+  ],
+  "ITEM": [
+    "rainwater", "bottles", "firewood", "rabbits", "food", "berries",
+    "fishing traps", "water", "medicinal herbs", "metal", "scrap metal",
+    "mushrooms", "cars", "newspapers", "canned food", "plastic bottles",
+    "salt", "branches", "batteries", "roots", "fish", "bow", "arrows",
+    "filter", "system", "pit", "bed", "shed", "bombs", "traps", "greenhouse",
+    "rod", "charger", "armor", "still", "cache", "spear", "weapon", "fuel",
+    "supplies", "medicine", "tools", "rope", "cloth"
+  ],
+  "NPC": [
+    "raiders", "wolf", "mutant wolf", "zombie", "bandits", "bear", "mutated bear",
+    "cannibal tribe", "sniper", "attackers", "spider", "radioactive spider",
+    "dogs", "feral dogs", "cultists", "patrol", "looters", "snake", "crocodile",
+    "mutant crocodile", "survivor", "beast", "infected", "infected beast",
+    "horde", "merchant", "soldier", "elder", "mechanic", "scavenger",
+    "faction leader", "guard", "animal", "creature"
+  ]
+}
