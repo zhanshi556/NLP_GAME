@@ -5,5 +5,5 @@
   "build": "建造加固",
   "rest": "休息恢复",
   "trade": "交易互动",
-  "other": "其他闲聊"
+  "ESCAPE_MOVE": "逃离移动"
 }
