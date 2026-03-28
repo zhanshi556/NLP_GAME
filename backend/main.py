@@ -1,8 +1,16 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from .game_logic import generate_event, extract_entities_from_event
-from .nlu.model import NLUModel
+
+# 兼容两种启动方式：
+# 1) 项目根目录: uvicorn backend.main:app --reload
+# 2) backend 目录: uvicorn main:app --reload
+try:
+    from .game_logic import generate_event, extract_entities_from_event
+    from .nlu.model import NLUModel
+except ImportError:
+    from game_logic import generate_event, extract_entities_from_event
+    from nlu.model import NLUModel
 
 app = FastAPI()
 app.add_middleware(
@@ -26,7 +34,7 @@ except Exception as e:
 print("=" * 60)
 
 # 预设动作列表
-PRESET_ACTIONS = ["探索废墟", "寻找水源", "狩猎食物", "修理庇护所", "休息", "逃离"]
+PRESET_ACTIONS = ["探索废墟", "寻找水源", "狩猎食物", "修理庇护所", "休息", "逃离", "逃离移动"]
 
 # NLU 置信度阈值设置
 NLU_CONFIDENCE_THRESHOLD = 0.55  # 低于此阈值时触发回退机制（从 0.6 改为 0.55）

@@ -24,7 +24,8 @@ class NLUModel:
             checkpoint_dir: 数据目录（保留以兼容旧代码）
         """
         self.model_name = model_name
-        self.data_dir = Path("backend/nlu/data")
+        # 使用文件绝对路径定位数据目录，兼容不同启动目录
+        self.data_dir = Path(__file__).resolve().parent / "data"
         
         # 加载意图映射表
         with open(self.data_dir / "intent_mapping.json", "r", encoding="utf-8") as f:
@@ -34,6 +35,7 @@ class NLUModel:
         self.intent_list = list(self.intent_mapping.keys())
         self.intent_to_id = {intent: idx for idx, intent in enumerate(self.intent_list)}
         self.id_to_intent = {idx: intent for intent, idx in self.intent_to_id.items()}
+        self.fallback_intent = "explore" if "explore" in self.intent_list else self.intent_list[0]
         
         print(f"意图列表: {self.intent_list}")
         print(f"总意图数: {len(self.intent_list)}")
@@ -72,26 +74,38 @@ class NLUModel:
             self.static_entities = {}
     
     def _build_few_shot_examples(self):
-        """从训练数据构建 Few-shot 示例"""
+        """从训练数据构建 Few-shot 示例（每类前2条）和测试集（每类后18条）"""
         try:
             with open(self.data_dir / "train.json", "r", encoding="utf-8") as f:
                 data = json.load(f)
             
-            # 从每个意图选 2 个示例
+            # 前2条作为 few-shot，后18条作为测试集
             self.few_shot_examples = {}
+            self.intent_test_samples = []
             for item in data:
-                examples = item.get("examples", [])[:2]  # 每个意图取 2 个示例
-                for ex in examples:
+                examples = item.get("examples", [])
+                few_shot_part = examples[:2]
+                test_part = examples[2:]
+
+                for ex in few_shot_part:
                     intent = ex["intent"]
                     text = ex["text"]
                     if intent not in self.few_shot_examples:
                         self.few_shot_examples[intent] = []
                     self.few_shot_examples[intent].append(text)
+
+                for ex in test_part:
+                    self.intent_test_samples.append({
+                        "text": ex["text"],
+                        "intent": ex["intent"]
+                    })
             
             print(f"✅ 已加载 Few-shot 示例（{sum(len(v) for v in self.few_shot_examples.values())} 条）")
+            print(f"✅ 已加载意图测试集（{len(self.intent_test_samples)} 条）")
         except Exception as e:
             print(f"⚠️  加载 Few-shot 示例失败: {e}")
             self.few_shot_examples = {}
+            self.intent_test_samples = []
     
     def add_entity(self, entity_type: str, entity_text: str):
         """
@@ -195,11 +209,11 @@ class NLUModel:
         
         # Few-shot 示例
         few_shot_text = ""
-        for intent in self.intent_list[:3]:  # 只用前 3 个意图的示例，节省 tokens
+        for intent in self.intent_list:  # 覆盖全部意图，避免新增意图缺少示例
             examples = self.few_shot_examples.get(intent, [])
             if examples:
                 few_shot_text += f"\n- Intent: {intent}\n"
-                for ex in examples[:1]:  # 每个意图只用 1 个例子
+                for ex in examples[:2]:  # 每个意图使用前2条 few-shot
                     few_shot_text += f"  Example: \"{ex}\"\n"
         
         system_prompt = f"""You are an NLU classifier for a survival game. Analyze player input and return ONLY a valid JSON response.
@@ -237,9 +251,9 @@ Example response format:
             result = json.loads(response)
             
             # 验证和补全结果
-            intent = result.get("intent", "other")
+            intent = result.get("intent", self.fallback_intent)
             if intent not in self.intent_list:
-                intent = "other"
+                intent = self.fallback_intent
             
             confidence = float(result.get("confidence", 0.5))
             confidence = max(0.0, min(1.0, confidence))  # 限制在 0-1 之间
@@ -252,7 +266,7 @@ Example response format:
             
             # 映射意图 ID
             intent_id = self.intent_to_id.get(intent, len(self.intent_list) - 1)
-            action = self.intent_mapping.get(intent, "其他")
+            action = self.intent_mapping.get(intent, self.intent_mapping[self.fallback_intent])
             
             # 调试输出
             print(f"[NLU DEBUG] 输入: '{text}'")
@@ -270,12 +284,12 @@ Example response format:
         except json.JSONDecodeError as e:
             print(f"❌ JSON 解析失败: {e}")
             print(f"原始响应: {response}")
-            # 降级处理：返回 "other"
+            # 降级处理：返回 fallback 意图，且置信度置低，触发上层拒绝机制
             return {
-                "intent": "other",
-                "action": self.intent_mapping["other"],
-                "confidence": 0.3,
-                "intent_id": self.intent_to_id["other"],
+                "intent": self.fallback_intent,
+                "action": self.intent_mapping[self.fallback_intent],
+                "confidence": 0.0,
+                "intent_id": self.intent_to_id[self.fallback_intent],
                 "entities": {"LOCATION": [], "NPC": [], "ITEM": []}
             }
         except Exception as e:
