@@ -1,9 +1,9 @@
 {
-  "explore": "探索废墟",
-  "collect": "采集资源",
-  "fight": "战斗对抗",
-  "build": "建造加固",
-  "rest": "休息恢复",
-  "trade": "交易互动",
-  "ESCAPE_MOVE": "逃离移动"
+  "explore": "Explore Ruins",
+  "collect": "Collect Resources",
+  "fight": "Combat & Fight",
+  "build": "Build & Reinforce",
+  "rest": "Rest & Recover",
+  "trade": "Trade & Interact",
+  "ESCAPE_MOVE": "Escape & Move"
 }
