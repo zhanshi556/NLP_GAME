@@ -2,6 +2,7 @@ import os
 import json
 import httpx
 import re
+import asyncio
 from dotenv import load_dotenv
 
 # 加载环境变量
@@ -12,57 +13,25 @@ DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 # ✅ 正确的 DeepSeek API 地址
 DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
 
-# 12星座庇护所设定
+# 12星座庇护所设定 (12 Zodiac Shelters)
 shelters = {
-    "白羊座": {"type": "山洞", "resources": {"food":5,"water":3,"tools":2}, "ability": "防御力+10"},
-    "金牛座": {"type": "农场小屋", "resources": {"food":7,"water":5,"tools":2}, "ability": "食物产出+1"},
-    "双子座": {"type": "移动避难车", "resources": {"food":4,"water":4,"tools":3}, "ability": "随机避开一次危险事件"},
-    "巨蟹座": {"type": "海边木屋", "resources": {"food":5,"water":7,"tools":1}, "ability": "捕获海产品概率+30%"},
-    "狮子座": {"type": "山顶堡垒", "resources": {"food":4,"water":4,"tools":3}, "ability": "先看到未来事件提示"},
-    "处女座": {"type": "地下避难室", "resources": {"food":5,"water":5,"tools":3}, "ability": "修复速度+50%"},
-    "天秤座": {"type": "林间树屋", "resources": {"food":6,"water":5,"tools":2}, "ability": "探索资源概率+20%"},
-    "天蝎座": {"type": "洞穴实验室", "resources": {"food":4,"water":4,"tools":4}, "ability": "探索科技物品概率+40%"},
-    "射手座": {"type": "沙漠帐篷", "resources": {"food":3,"water":6,"tools":3}, "ability": "沙漠事件触发概率降低"},
-    "摩羯座": {"type": "山谷石屋", "resources": {"food":5,"water":5,"tools":2}, "ability": "庇护所耐久+20%"},
-    "水瓶座": {"type": "空中吊舱", "resources": {"food":3,"water":4,"tools":4}, "ability": "探索额外行动一次"},
-    "双鱼座": {"type": "河边小舟", "resources": {"food":4,"water":6,"tools":2}, "ability": "水路自由，可逃避一次陆地危险事件"}
+    "Aries": {"type": "Cave", "resources": {"food":5,"water":3,"tools":2}, "ability": "Defense +10"},
+    "Taurus": {"type": "Farmhouse", "resources": {"food":7,"water":5,"tools":2}, "ability": "Food Production +1"},
+    "Gemini": {"type": "Mobile RV", "resources": {"food":4,"water":4,"tools":3}, "ability": "Randomly dodge a danger once"},
+    "Cancer": {"type": "Seaside Cabin", "resources": {"food":5,"water":7,"tools":1}, "ability": "Seafood catch chance +30%"},
+    "Leo": {"type": "Mountain Fortress", "resources": {"food":4,"water":4,"tools":3}, "ability": "See future event hints"},
+    "Virgo": {"type": "Underground Bunker", "resources": {"food":5,"water":5,"tools":3}, "ability": "Repair speed +50%"},
+    "Libra": {"type": "Treehouse", "resources": {"food":6,"water":5,"tools":2}, "ability": "Resource explore chance +20%"},
+    "Scorpio": {"type": "Cave Lab", "resources": {"food":4,"water":4,"tools":4}, "ability": "Tech item explore chance +40%"},
+    "Sagittarius": {"type": "Desert Tent", "resources": {"food":3,"water":6,"tools":3}, "ability": "Desert event trigger chance reduced"},
+    "Capricorn": {"type": "Valley Stone House", "resources": {"food":5,"water":5,"tools":2}, "ability": "Shelter durability +20%"},
+    "Aquarius": {"type": "Sky Pod", "resources": {"food":3,"water":4,"tools":4}, "ability": "One extra explore action"},
+    "Pisces": {"type": "River Boat", "resources": {"food":4,"water":6,"tools":2}, "ability": "Water travel, dodge one land danger event"}
 }
 
-async def generate_event(player_state, action):
-    star_sign = player_state.get("starSign")
-    shelter = shelters.get(star_sign, {})
-
-    # 构造 Prompt
-    prompt = f"""
-你是一款末日生存文字游戏 AI。
-
-玩家当前状态：
-{json.dumps(player_state, ensure_ascii=False, indent=2)}
-
-庇护所类型：{shelter.get("type")}
-庇护所特殊能力：{shelter.get("ability")}
-
-玩家选择动作：{action}
-
-请生成下一步事件，并严格输出 JSON 格式：
-
-要求：
-1. eventText: 事件描述（生动一点）
-2. resourceChanges: 资源变化（food, water, tools）
-3. stateChanges: 状态变化（health）
-4. nextActions: 3个可选行动
-
-示例格式：
-{{
-  "eventText": "你在废墟中找到一些罐头，但遭遇野兽袭击。",
-  "resourceChanges": {{ "food": 2, "water": 0, "tools": -1 }},
-  "stateChanges": {{ "health": -10 }},
-  "nextActions": ["逃跑", "反击", "躲藏"]
-}}
-"""
-
+async def async_deepseek_call(system_prompt, user_prompt):
     try:
-        async with httpx.AsyncClient(timeout=20.0) as client:
+        async with httpx.AsyncClient(timeout=30.0) as client:
             response = await client.post(
                 DEEPSEEK_API_URL,
                 headers={
@@ -72,39 +41,156 @@ async def generate_event(player_state, action):
                 json={
                     "model": "deepseek-chat",
                     "messages": [
-                        {"role": "system", "content": "你是一个末日生存文字游戏AI"},
-                        {"role": "user", "content": prompt}
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt}
                     ],
                     "temperature": 0.7
                 }
             )
-
-            result = response.json()
-
-            # 获取 AI 返回内容
-            content = result["choices"][0]["message"]["content"]
-
-            # 尝试解析 JSON
-            try:
-                return json.loads(content)
-            except:
-                # fallback（AI没按JSON输出）
-                return {
-                    "eventText": content,
-                    "resourceChanges": {},
-                    "stateChanges": {},
-                    "nextActions": ["继续探索","修理庇护所","休息"]
-                }
-
+            content = response.json()["choices"][0]["message"]["content"].strip()
+            if content.startswith("```"):
+                content = content.split("```")[1]
+                if content.startswith("json"):
+                    content = content[4:]
+            return content.strip()
     except Exception as e:
-        # 🚑 防止游戏直接崩溃
-        print("DeepSeek调用失败:", e)
-        return {
-            "eventText": "通讯中断……你暂时无法获取外界信息，但仍然可以行动。",
+        print("DeepSeek API Error:", e)
+        return None
+
+async def _summarize_history(history):
+    sys_prompt = "You are a specialized summarizer for a post-apocalyptic text game."
+    history_lines = [f"- Action: {h.get('action')}\n  Result: {h.get('result')}" for h in history]
+    history_text = "\n".join(history_lines)
+    user_prompt = f"Summarize the following 5 turns of gameplay into ONE concise, fluent English sentence capturing the main events and outcomes.\n\n{history_text}"
+    res = await async_deepseek_call(sys_prompt, user_prompt)
+    return res if res else "The survivor continued exploring the wasteland."
+
+async def _compress_long_term(long_term_memory):
+    sys_prompt = "You are an epic story writer capturing macro-level game summaries."
+    ltm_text = "\n".join([f"- {m}" for m in long_term_memory])
+    user_prompt = f"Condense the following {len(long_term_memory)} summary sentences of gameplay into EXACTLY 3 overarching epic chapters (strings). Ensure it flows like a story. Output ONLY a valid JSON array of 3 strings.\n\n{ltm_text}\n\nExample Output:\n[\"Chapter 1: The Awakening in the Ruins...\", \"Chapter 2: ...\", \"Chapter 3: ...\"]"
+    res = await async_deepseek_call(sys_prompt, user_prompt)
+    try:
+        chapters = json.loads(res)
+        if isinstance(chapters, list) and len(chapters) > 0:
+            return chapters
+    except:
+        pass
+    return ["A significant chapter of survival passed, filled with unknown struggles and triumphs."]
+
+async def generate_event(player_state, action):
+    star_sign = player_state.get("starSign")
+    shelter = shelters.get(star_sign, {})
+
+    # Extract memory architecture states
+    action_count = player_state.pop("actionCount", 0)
+    history = player_state.pop("history", [])
+    long_term_memory = player_state.pop("longTermMemory", [])
+    epic_memory = player_state.pop("epicMemory", [])
+
+    # Build Hierarchical Context
+    background_lore = ""
+    lore_parts = []
+    if epic_memory:
+        lore_parts.append("[Epic Chapters]\n" + "\n".join(f"- {e}" for e in epic_memory))
+    if long_term_memory:
+        lore_parts.append("[Recent Long-Term Memory]\n" + "\n".join(f"- {m}" for m in long_term_memory))
+    if lore_parts:
+        background_lore = "\n\n".join(lore_parts)
+    else:
+        background_lore = "The journey has just begun."
+
+    short_term_text = "No immediate past actions."
+    if history:
+        # 只取最近的3回合作为眼前场景的焦点，忽略稍微远一点的动作防止场景穿越
+        recent_3 = history[-3:] if len(history) >= 3 else history
+        short_term_text = "\n".join([f"- Past action: {h.get('action')}\n  Result: {h.get('result')}" for h in recent_3])
+
+    # Construct Prompt
+    prompt = f"""
+You are an AI Game Master for a text-based post-apocalyptic survival game.
+
+=== BACKGROUND LORE (Passive Knowledge) ===
+{background_lore}
+*Rule: Use this ONLY for world consistency. DO NOT forcefully mention these past events in the current scene unless explicitly relevant.*
+
+=== IMMEDIATE SCENE (What just happened in the current location) ===
+{short_term_text}
+
+=== PLAYER STATUS ===
+{json.dumps(player_state, ensure_ascii=False, indent=2)}
+Shelter Type: {shelter.get("type")} ({shelter.get("ability")})
+
+=== CURRENT ACTION ===
+Player Action: "{action}"
+
+INSTRUCTION: 
+Focus 90% of your attention on resolving the "Current Action" logically based on the "IMMEDIATE SCENE". Do not repeat the history. Output strictly in JSON format.
+
+Requirements:
+1. eventText: Event description (make it vivid, immersive, and logically continued in English)
+2. resourceChanges: Changes in resources (food, water, tools)
+3. stateChanges: Changes in state (health)
+4. nextActions: 3 possible next actions for the player to choose from
+
+Example Format:
+{{
+  "eventText": "You enter the dark room. Because earlier you found a flashlight, you can see clearly now. You find some canned food, but hear noises...",
+  "resourceChanges": {{ "food": 2, "water": 0, "tools": -1 }},
+  "stateChanges": {{ "health": -10 }},
+  "nextActions": ["Run away", "Fight back", "Hide"]
+}}
+"""
+
+    # Prepare concurrent tasks
+    sys_prompt = "You are a post-apocalyptic survival text game AI."
+    main_task = async_deepseek_call(sys_prompt, prompt)
+
+    # 此时如果 action_count % 5 == 0，意味着这是第 5、10、15... 次动作的“结果”之后。 
+    # 但是前端传上来的 history 里只有前 4 次的完整记录（含前端尚未知道的本次动作，但当时还没生成结果）。
+    # 要做彻底的 5 轮总结，最好是等主剧情结果出来，加进去再拼成 5 轮。 
+    # 因此，我们先 run main_task，拿到本次的结果，再结合之前的凑成真正的 5 轮历史去总结。
+
+    # Run main task first to get the outcome of the 5th action
+    main_res = await main_task
+
+    # Process main response
+    try:
+        if not main_res: raise Exception("Null response from AI")
+        event_data = json.loads(main_res)
+    except Exception as e:
+        print("Json Parse Error in main generation:", e)
+        event_data = {
+            "eventText": "Communication lost... You can't reach the outside world temporarily, but you can still act.",
             "resourceChanges": {},
             "stateChanges": {},
-            "nextActions": ["继续探索","修理庇护所","休息"]
+            "nextActions": ["Continue exploring", "Fix shelter", "Rest"]
         }
+
+    # Now that we have the 5th action's result (event_data["eventText"]), we can form the perfect 5-turn memory!
+    summary_task = None
+    compress_task = None
+    memory_updates = {}
+
+    # triggers every 5 actions
+    if action_count > 0 and action_count % 5 == 0:
+        # Create a temporary copy of history and append the JUST generated 5th event
+        # (This guarantees it summarizes EXACTLY rounds 1 to 5 instead of missing the current one)
+        temp_history_for_summary = history[-4:] if len(history) >= 4 else history.copy()
+        temp_history_for_summary.append({
+            "action": action,
+            "result": event_data.get("eventText", "")
+        })
+        summary_res = await _summarize_history(temp_history_for_summary)
+        memory_updates["newSummary"] = summary_res
+
+    # triggers when exactly hitting the 10-item limit (after getting a new summary, but evaluating existing LTM)
+    if len(long_term_memory) >= 10:
+        compress_res = await _compress_long_term(long_term_memory)
+        memory_updates["newEpicChapters"] = compress_res
+        
+    event_data["_memoryUpdates"] = memory_updates
+    return event_data
 
 
 def extract_entities_from_event(event_text: str, nlu_model=None):
