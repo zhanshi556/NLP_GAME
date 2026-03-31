@@ -20,9 +20,15 @@
         <p v-if="playerState.apocalypseTheme" class="apocalypse-theme"><strong>🌍 {{ playerState.apocalypseTheme }}</strong></p>
       </div>
 
-      <!-- Inventory Section -->
-      <div class="inventory-section">
-        <h4>🎒 Inventory ({{ playerState.inventory.length }} items)</h4>
+      <!-- Inventory Section (Hidden by default, shown only with backpack button) -->
+      <div class="inventory-toggle-section">
+        <button class="backpack-btn" @click="showInventory = !showInventory">
+          🎒 Backpack ({{ playerState.inventory.length }}/{{ MAX_INVENTORY_SLOTS }})
+        </button>
+      </div>
+
+      <div v-if="showInventory" class="inventory-section">
+        <h4>🎒 Inventory</h4>
         <div v-if="playerState.inventory.length === 0" class="empty-inventory">
           No items in backpack
         </div>
@@ -36,6 +42,9 @@
               <span v-if="item.repair > 0">🔧+{{ item.repair }}</span>
             </span>
           </div>
+        </div>
+        <div v-if="playerState.inventory.length >= MAX_INVENTORY_SLOTS" class="inventory-full-warning">
+          ⚠️ Your backpack is full! Max {{ MAX_INVENTORY_SLOTS }} items.
         </div>
       </div>
 
@@ -163,7 +172,9 @@ export default {
       loading: false,
       warning: "",
       showRestModal: false,
-      selectedItems: []
+      selectedItems: [],
+      showInventory: false,
+      MAX_INVENTORY_SLOTS: 10
     };
   },
   computed: {
@@ -177,6 +188,11 @@ export default {
       return this.playerState.inventory.filter(item => item.repair && item.repair > 0).length;
     }
   },
+  watch: {
+    'playerState.day': function(newVal, oldVal) {
+      console.log(`🔔 Day Watcher: Day changed from ${oldVal} to ${newVal}`);
+    }
+  },
   methods: {
     selectStar(sign) {
       this.playerState.starSign = sign;
@@ -184,9 +200,12 @@ export default {
       this.playerState.inventory = [];
       this.playerState.atShelter = true;
       this.playerState.apocalypseTheme = this.apocalypseThemes[sign];
+      this.playerState.day = 1;  // Ensure day is initialized to 1
+      this.playerState.actionCount = 0;
       this.currentEvent = `You selected ${sign}. Shelter has been established. Your journey begins in a world ravaged by ${this.apocalypseThemes[sign].split(' - ')[0]}...`;
       this.nextActions = ["Explore Ruins", "Search for Water", "Rest"];
       this.warning = "";
+      console.log(`🎮 Game Started with ${sign}. Day initialized to: ${this.playerState.day}`);
     },
 
     restartGame() {
@@ -210,6 +229,7 @@ export default {
       this.warning = "";
       this.showRestModal = false;
       this.selectedItems = [];
+      this.showInventory = false;
     },
 
     returnToShelter() {
@@ -259,9 +279,19 @@ export default {
         if (totalHealth > 0) restMessage += ` Health +${totalHealth}.`;
       }
 
+      // Apply daily consumption BEFORE incrementing day
       this.applyDailyConsumption();
-      this.playerState.day += 1;
 
+      // CRITICAL: Increment day to progress the game
+      const oldDay = this.playerState.day;
+      this.playerState.day += 1;
+      console.log(`✅ confirmRest: Day updated from ${oldDay} to ${this.playerState.day}`);
+      console.log(`📊 Current playerState.day: ${this.playerState.day}`);
+      this.$nextTick(() => {
+        console.log(`✅ Vue tick after Rest: Day is now ${this.playerState.day}`);
+      });
+
+      // Check if it's a cataclysm day (after day increment)
       if (this.isCataclysmDay) {
         this.applyCataclysmEffects();
       }
@@ -404,9 +434,23 @@ export default {
 
         // Add new items to inventory (instead of directly changing resources)
         if (data.newItems && data.newItems.length > 0) {
+          let addedItems = [];
+          let rejectedItems = [];
+
           data.newItems.forEach(item => {
-            this.playerState.inventory.push(item);
+            // Check if backpack is full (max 10 items)
+            if (this.playerState.inventory.length < this.MAX_INVENTORY_SLOTS) {
+              this.playerState.inventory.push(item);
+              addedItems.push(item.name);
+            } else {
+              rejectedItems.push(item.name);
+            }
           });
+
+          // Show warning if backpack is full
+          if (rejectedItems.length > 0) {
+            this.warning = `<strong>⚠️ Backpack Full!</strong><br>Could not pick up: ${rejectedItems.join(", ")}<br>Your backpack can only hold ${this.MAX_INVENTORY_SLOTS} items max.`;
+          }
         }
 
         // Only apply tool changes directly (tools are not consumable items)
@@ -448,7 +492,13 @@ export default {
 
         // Apply daily consumption
         this.applyDailyConsumption();
+
+        // CRITICAL: Increment day and force Vue reactivity
         this.playerState.day += 1;
+        console.log(`✅ takeAction: Day updated to ${this.playerState.day}`);
+        this.$nextTick(() => {
+          console.log(`✅ Vue tick: Day is now ${this.playerState.day}`);
+        });
 
         // Check if it's cataclysm day
         if (this.isCataclysmDay) {
@@ -511,6 +561,34 @@ export default {
   border-top: 1px solid #e0e0e0;
 }
 
+/* Inventory Toggle Button */
+.inventory-toggle-section {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 10px;
+}
+
+.backpack-btn {
+  padding: 10px 15px;
+  background-color: #FF9800;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.backpack-btn:hover {
+  background-color: #F57C00;
+  transform: scale(1.05);
+}
+
+.backpack-btn:active {
+  transform: scale(0.98);
+}
+
 /* Inventory Section */
 .inventory-section {
   margin-bottom: 15px;
@@ -518,6 +596,18 @@ export default {
   background-color: #e8f5e9;
   border-radius: 5px;
   border: 2px solid #4CAF50;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .inventory-section h4 {
@@ -528,6 +618,16 @@ export default {
 .empty-inventory {
   color: #888;
   font-style: italic;
+}
+
+.inventory-full-warning {
+  margin-top: 10px;
+  padding: 8px;
+  background-color: #fff3cd;
+  border-left: 3px solid #FF9800;
+  color: #856404;
+  font-size: 13px;
+  border-radius: 3px;
 }
 
 .inventory-grid {
