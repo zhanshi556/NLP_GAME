@@ -6,10 +6,10 @@ from pydantic import BaseModel
 # 1) 项目根目录: uvicorn backend.main:app --reload
 # 2) backend 目录: uvicorn main:app --reload
 try:
-    from .game_logic import generate_event, extract_entities_from_event
+    from .game_logic import generate_event, extract_entities_from_event, get_zodiac_profiles_for_api
     from .nlu.model import NLUModel
 except ImportError:
-    from game_logic import generate_event, extract_entities_from_event
+    from game_logic import generate_event, extract_entities_from_event, get_zodiac_profiles_for_api
     from nlu.model import NLUModel
 
 app = FastAPI()
@@ -43,6 +43,13 @@ NLU_HIGH_CONFIDENCE_THRESHOLD = 0.85  # 高置信度标记
 class PlayRequest(BaseModel):
     playerState: dict
     action: str
+
+
+@app.get("/api/zodiac-signs")
+async def list_zodiac_signs():
+    """Birth sign stats, elements, and flavor text for the character-select UI."""
+    return get_zodiac_profiles_for_api()
+
 
 @app.post("/api/play")
 async def play(request: PlayRequest):

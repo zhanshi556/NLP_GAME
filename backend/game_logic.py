@@ -14,20 +14,123 @@ DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
 
 # 12星座庇护所设定 (12 Zodiac Shelters)
+# resources / type / ability / apocalypse: gameplay + LLM world tone
+# element / personality / startingHealth: birth sign flavor (frontend + narrator)
+_ZODIAC_ORDER = [
+    "Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo",
+    "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces",
+]
+
 shelters = {
-    "Aries": {"type": "Cave", "resources": {"food":5,"water":3,"tools":2}, "ability": "Defense +10", "apocalypse": "Massive Flooding - Rising waters and flash floods have submerged the world. Water levels keep rising, threatening all low-lying areas."},
-    "Taurus": {"type": "Farmhouse", "resources": {"food":7,"water":5,"tools":2}, "ability": "Food Production +1", "apocalypse": "Acid Rain - Toxic precipitation falls from the sky, corroding everything it touches. Find shelter quickly or face chemical burns."},
-    "Gemini": {"type": "Mobile RV", "resources": {"food":4,"water":4,"tools":3}, "ability": "Randomly dodge a danger once", "apocalypse": "Zombie Outbreak - The dead have risen and roam the wasteland hunting the living. Stay alert and avoid hordes."},
-    "Cancer": {"type": "Seaside Cabin", "resources": {"food":5,"water":7,"tools":1}, "ability": "Seafood catch chance +30%", "apocalypse": "Extreme Heat - Record-breaking temperatures turn the world into an inferno. Dehydration is a constant threat."},
-    "Leo": {"type": "Mountain Fortress", "resources": {"food":4,"water":4,"tools":3}, "ability": "See future event hints", "apocalypse": "Extreme Drought - All water sources have vanished. The land is barren and crops cannot grow. Thirst rules survival."},
-    "Virgo": {"type": "Underground Bunker", "resources": {"food":5,"water":5,"tools":3}, "ability": "Repair speed +50%", "apocalypse": "Solar Collapse - The Sun's radiation has intensified, scorching the surface. Only underground is safe from cosmic rays."},
-    "Libra": {"type": "Treehouse", "resources": {"food":6,"water":5,"tools":2}, "ability": "Resource explore chance +20%", "apocalypse": "Alien Invasion - Extraterrestrial forces have arrived and are harvesting Earth's resources. Avoid detection at all costs."},
-    "Scorpio": {"type": "Cave Lab", "resources": {"food":4,"water":4,"tools":4}, "ability": "Tech item explore chance +40%", "apocalypse": "Dinosaur Revival - Prehistoric creatures have been cloned and released into the world. Ancient predators now roam freely."},
-    "Sagittarius": {"type": "Desert Tent", "resources": {"food":3,"water":6,"tools":3}, "ability": "Desert event trigger chance reduced", "apocalypse": "Cockroach Plague - Mutant insects have overrun civilization. Billions of them swarm everywhere, consuming everything."},
-    "Capricorn": {"type": "Valley Stone House", "resources": {"food":5,"water":5,"tools":2}, "ability": "Shelter durability +20%", "apocalypse": "New Ice Age - Temperatures have plummeted and glaciers spread. Eternal winter has frozen the world."},
-    "Aquarius": {"type": "Sky Pod", "resources": {"food":3,"water":4,"tools":4}, "ability": "One extra explore action", "apocalypse": "Mega Tsunami - Colossal waves triggered by underwater earthquakes have devastated coastal areas. Massive flooding everywhere."},
-    "Pisces": {"type": "River Boat", "resources": {"food":4,"water":6,"tools":2}, "ability": "Water travel, dodge one land danger event", "apocalypse": "Biological Disaster - A genetically engineered virus has mutated the world's population. The infected are everywhere and hostile."}
+    "Aries": {
+        "type": "Cave", "resources": {"food": 5, "water": 3, "tools": 2}, "ability": "Defense +10",
+        "element": "Fire",
+        "personality": "Impulsive and brave; you charge toward threats but rally quickly after a setback.",
+        "startingHealth": 96,
+        "apocalypse": "Massive Flooding - Rising waters and flash floods have submerged the world. Water levels keep rising, threatening all low-lying areas.",
+    },
+    "Taurus": {
+        "type": "Farmhouse", "resources": {"food": 7, "water": 5, "tools": 2}, "ability": "Food Production +1",
+        "element": "Earth",
+        "personality": "Steady and stubborn; you stretch food stores and loathe wasteful risks.",
+        "startingHealth": 100,
+        "apocalypse": "Acid Rain - Toxic precipitation falls from the sky, corroding everything it touches. Find shelter quickly or face chemical burns.",
+    },
+    "Gemini": {
+        "type": "Mobile RV", "resources": {"food": 4, "water": 4, "tools": 3}, "ability": "Randomly dodge a danger once",
+        "element": "Air",
+        "personality": "Curious and restless; you adapt to strange threats fast but scatter your focus.",
+        "startingHealth": 86,
+        "apocalypse": "Zombie Outbreak - The dead have risen and roam the wasteland hunting the living. Stay alert and avoid hordes.",
+    },
+    "Cancer": {
+        "type": "Seaside Cabin", "resources": {"food": 5, "water": 7, "tools": 1}, "ability": "Seafood catch chance +30%",
+        "element": "Water",
+        "personality": "Protective and intuitive; you read people and places, and cling to pockets of safety.",
+        "startingHealth": 92,
+        "apocalypse": "Extreme Heat - Record-breaking temperatures turn the world into an inferno. Dehydration is a constant threat.",
+    },
+    "Leo": {
+        "type": "Mountain Fortress", "resources": {"food": 4, "water": 4, "tools": 3}, "ability": "See future event hints",
+        "element": "Fire",
+        "personality": "Proud and charismatic; you refuse to show weakness and push through hardship.",
+        "startingHealth": 98,
+        "apocalypse": "Extreme Drought - All water sources have vanished. The land is barren and crops cannot grow. Thirst rules survival.",
+    },
+    "Virgo": {
+        "type": "Underground Bunker", "resources": {"food": 5, "water": 5, "tools": 3}, "ability": "Repair speed +50%",
+        "element": "Earth",
+        "personality": "Analytical and careful; you get more mileage from tools, medicine, and repairs.",
+        "startingHealth": 90,
+        "apocalypse": "Solar Collapse - The Sun's radiation has intensified, scorching the surface. Only underground is safe from cosmic rays.",
+    },
+    "Libra": {
+        "type": "Treehouse", "resources": {"food": 6, "water": 5, "tools": 2}, "ability": "Resource explore chance +20%",
+        "element": "Air",
+        "personality": "Diplomatic and fair; you notice trades, alliances, and balanced opportunities others miss.",
+        "startingHealth": 96,
+        "apocalypse": "Alien Invasion - Extraterrestrial forces have arrived and are harvesting Earth's resources. Avoid detection at all costs.",
+    },
+    "Scorpio": {
+        "type": "Cave Lab", "resources": {"food": 4, "water": 4, "tools": 4}, "ability": "Tech item explore chance +40%",
+        "element": "Water",
+        "personality": "Intense and secretive; you endure pain and turn scraps into sharp advantages.",
+        "startingHealth": 96,
+        "apocalypse": "Dinosaur Revival - Prehistoric creatures have been cloned and released into the world. Ancient predators now roam freely.",
+    },
+    "Sagittarius": {
+        "type": "Desert Tent", "resources": {"food": 3, "water": 6, "tools": 3}, "ability": "Desert event trigger chance reduced",
+        "element": "Fire",
+        "personality": "Optimistic and roaming; you travel light and stumble into odd windfalls far from home.",
+        "startingHealth": 94,
+        "apocalypse": "Cockroach Plague - Mutant insects have overrun civilization. Billions of them swarm everywhere, consuming everything.",
+    },
+    "Capricorn": {
+        "type": "Valley Stone House", "resources": {"food": 5, "water": 5, "tools": 2}, "ability": "Shelter durability +20%",
+        "element": "Earth",
+        "personality": "Disciplined and patient; you plan for the long haul and waste almost nothing.",
+        "startingHealth": 100,
+        "apocalypse": "New Ice Age - Temperatures have plummeted and glaciers spread. Eternal winter has frozen the world.",
+    },
+    "Aquarius": {
+        "type": "Sky Pod", "resources": {"food": 3, "water": 4, "tools": 4}, "ability": "One extra explore action",
+        "element": "Air",
+        "personality": "Unconventional and clever; you jury-rig devices and surprise threats with odd solutions.",
+        "startingHealth": 88,
+        "apocalypse": "Mega Tsunami - Colossal waves triggered by underwater earthquakes have devastated coastal areas. Massive flooding everywhere.",
+    },
+    "Pisces": {
+        "type": "River Boat", "resources": {"food": 4, "water": 6, "tools": 2}, "ability": "Water travel, dodge one land danger event",
+        "element": "Water",
+        "personality": "Dreamy and empathic; you catch environmental cues and emotional undercurrents others overlook.",
+        "startingHealth": 86,
+        "apocalypse": "Biological Disaster - A genetically engineered virus has mutated the world's population. The infected are everywhere and hostile.",
+    },
 }
+
+
+def get_zodiac_profiles_for_api():
+    """Public sign metadata for the character-select screen (ordered)."""
+    rows = []
+    for sign in _ZODIAC_ORDER:
+        data = shelters.get(sign, {})
+        apocalypse = data.get("apocalypse", "")
+        if " - " in apocalypse:
+            apocalypse_short = apocalypse.split(" - ", 1)[0].strip()
+        else:
+            apocalypse_short = (apocalypse[:48] + "…") if len(apocalypse) > 48 else apocalypse
+        rows.append({
+            "sign": sign,
+            "element": data.get("element", ""),
+            "personality": data.get("personality", ""),
+            "startingHealth": data.get("startingHealth", 100),
+            "resources": dict(data.get("resources", {"food": 5, "water": 5, "tools": 3})),
+            "shelterType": data.get("type", "Shelter"),
+            "ability": data.get("ability", ""),
+            "apocalypseShort": apocalypse_short,
+            "apocalypse": apocalypse,
+        })
+    return rows
 
 async def async_deepseek_call(system_prompt, user_prompt):
     try:
@@ -82,11 +185,19 @@ async def generate_event(player_state, action):
     star_sign = player_state.get("starSign")
     shelter = shelters.get(star_sign, {})
 
+    # How many completed beats so far (before this action resolves)
+    history_before = player_state.get("history") or []
+    early_survival_phase = len(history_before) < 4
+
     # Extract memory architecture states
     action_count = player_state.pop("actionCount", 0)
     history = player_state.pop("history", [])
     long_term_memory = player_state.pop("longTermMemory", [])
     epic_memory = player_state.pop("epicMemory", [])
+
+    # Do not pass sign-flavor fields into PLAYER STATUS — model over-uses them in prose
+    player_state.pop("zodiacPersonality", None)
+    player_state.pop("zodiacElement", None)
 
     # Build Hierarchical Context
     background_lore = ""
@@ -124,11 +235,21 @@ You are an AI Game Master for a text-based post-apocalyptic survival game.
 {json.dumps(player_state, ensure_ascii=False, indent=2)}
 Shelter Type: {shelter.get("type")} ({shelter.get("ability")})
 
+=== ZODIAC — INTERNAL BIAS ONLY (never lecture the player) ===
+Element: {shelter.get("element", "Unknown")}
+Inner tendencies (for you only — do not quote or paraphrase in eventText): {shelter.get("personality", "")}
+
+eventText rules — critical:
+- Never name the zodiac sign. Never write "As a Gemini…", "Your Aries…", "Your Gemini curiosity…", or any form of star-sign callout.
+- Never open with stock trait words tied to signs (curiosity, stubborn, fiery, dreamy, etc.) as if explaining the character.
+- Use the inner tendencies ONLY to bias complications, small consequences, environmental emphasis, or what goes wrong/right—same world, slightly different texture—not horoscope dialogue.
+{"- OPENING PHASE (first few turns after shelter): eventText must be 100% situational—environment, stakes, senses, objects, threats. No temperament commentary whatsoever." if early_survival_phase else "- Later play: still no sign names; at most a tiny behavioral hint through action, never astrological labels."}
+
 === CURRENT ACTION ===
 Player Action: "{action}"
 
 INSTRUCTION:
-Focus 90% of your attention on resolving the "Current Action" logically based on the "IMMEDIATE SCENE" and the apocalypse setting. The events should vividly reflect the unique apocalypse theme for this zodiac sign. Do not repeat the history. Output strictly in JSON format.
+Focus on resolving the "Current Action" from the IMMEDIATE SCENE and the apocalypse setting. Vividly reflect this zodiac’s **apocalypse scenario** (not astrology talk). Do not repeat prior history verbatim. Output strictly in JSON format.
 
 Requirements:
 1. eventText: Event description (make it vivid, immersive, and logically continued in English)
@@ -153,7 +274,10 @@ Example Format:
 """
 
     # Prepare concurrent tasks
-    sys_prompt = "You are a post-apocalyptic survival text game AI."
+    sys_prompt = (
+        "You are a post-apocalyptic survival text game AI. "
+        "Never write horoscope dialogue, name star signs, or use trait clichés about the player in eventText—only concrete scene, danger, and outcomes."
+    )
     main_task = async_deepseek_call(sys_prompt, prompt)
 
     # 此时如果 action_count % 5 == 0，意味着这是第 5、10、15... 次动作的“结果”之后。 
