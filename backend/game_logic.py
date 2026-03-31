@@ -15,18 +15,18 @@ DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
 
 # 12星座庇护所设定 (12 Zodiac Shelters)
 shelters = {
-    "Aries": {"type": "Cave", "resources": {"food":5,"water":3,"tools":2}, "ability": "Defense +10"},
-    "Taurus": {"type": "Farmhouse", "resources": {"food":7,"water":5,"tools":2}, "ability": "Food Production +1"},
-    "Gemini": {"type": "Mobile RV", "resources": {"food":4,"water":4,"tools":3}, "ability": "Randomly dodge a danger once"},
-    "Cancer": {"type": "Seaside Cabin", "resources": {"food":5,"water":7,"tools":1}, "ability": "Seafood catch chance +30%"},
-    "Leo": {"type": "Mountain Fortress", "resources": {"food":4,"water":4,"tools":3}, "ability": "See future event hints"},
-    "Virgo": {"type": "Underground Bunker", "resources": {"food":5,"water":5,"tools":3}, "ability": "Repair speed +50%"},
-    "Libra": {"type": "Treehouse", "resources": {"food":6,"water":5,"tools":2}, "ability": "Resource explore chance +20%"},
-    "Scorpio": {"type": "Cave Lab", "resources": {"food":4,"water":4,"tools":4}, "ability": "Tech item explore chance +40%"},
-    "Sagittarius": {"type": "Desert Tent", "resources": {"food":3,"water":6,"tools":3}, "ability": "Desert event trigger chance reduced"},
-    "Capricorn": {"type": "Valley Stone House", "resources": {"food":5,"water":5,"tools":2}, "ability": "Shelter durability +20%"},
-    "Aquarius": {"type": "Sky Pod", "resources": {"food":3,"water":4,"tools":4}, "ability": "One extra explore action"},
-    "Pisces": {"type": "River Boat", "resources": {"food":4,"water":6,"tools":2}, "ability": "Water travel, dodge one land danger event"}
+    "Aries": {"type": "Cave", "resources": {"food":5,"water":3,"tools":2}, "ability": "Defense +10", "apocalypse": "Massive Flooding - Rising waters and flash floods have submerged the world. Water levels keep rising, threatening all low-lying areas."},
+    "Taurus": {"type": "Farmhouse", "resources": {"food":7,"water":5,"tools":2}, "ability": "Food Production +1", "apocalypse": "Acid Rain - Toxic precipitation falls from the sky, corroding everything it touches. Find shelter quickly or face chemical burns."},
+    "Gemini": {"type": "Mobile RV", "resources": {"food":4,"water":4,"tools":3}, "ability": "Randomly dodge a danger once", "apocalypse": "Zombie Outbreak - The dead have risen and roam the wasteland hunting the living. Stay alert and avoid hordes."},
+    "Cancer": {"type": "Seaside Cabin", "resources": {"food":5,"water":7,"tools":1}, "ability": "Seafood catch chance +30%", "apocalypse": "Extreme Heat - Record-breaking temperatures turn the world into an inferno. Dehydration is a constant threat."},
+    "Leo": {"type": "Mountain Fortress", "resources": {"food":4,"water":4,"tools":3}, "ability": "See future event hints", "apocalypse": "Extreme Drought - All water sources have vanished. The land is barren and crops cannot grow. Thirst rules survival."},
+    "Virgo": {"type": "Underground Bunker", "resources": {"food":5,"water":5,"tools":3}, "ability": "Repair speed +50%", "apocalypse": "Solar Collapse - The Sun's radiation has intensified, scorching the surface. Only underground is safe from cosmic rays."},
+    "Libra": {"type": "Treehouse", "resources": {"food":6,"water":5,"tools":2}, "ability": "Resource explore chance +20%", "apocalypse": "Alien Invasion - Extraterrestrial forces have arrived and are harvesting Earth's resources. Avoid detection at all costs."},
+    "Scorpio": {"type": "Cave Lab", "resources": {"food":4,"water":4,"tools":4}, "ability": "Tech item explore chance +40%", "apocalypse": "Dinosaur Revival - Prehistoric creatures have been cloned and released into the world. Ancient predators now roam freely."},
+    "Sagittarius": {"type": "Desert Tent", "resources": {"food":3,"water":6,"tools":3}, "ability": "Desert event trigger chance reduced", "apocalypse": "Cockroach Plague - Mutant insects have overrun civilization. Billions of them swarm everywhere, consuming everything."},
+    "Capricorn": {"type": "Valley Stone House", "resources": {"food":5,"water":5,"tools":2}, "ability": "Shelter durability +20%", "apocalypse": "New Ice Age - Temperatures have plummeted and glaciers spread. Eternal winter has frozen the world."},
+    "Aquarius": {"type": "Sky Pod", "resources": {"food":3,"water":4,"tools":4}, "ability": "One extra explore action", "apocalypse": "Mega Tsunami - Colossal waves triggered by underwater earthquakes have devastated coastal areas. Massive flooding everywhere."},
+    "Pisces": {"type": "River Boat", "resources": {"food":4,"water":6,"tools":2}, "ability": "Water travel, dodge one land danger event", "apocalypse": "Biological Disaster - A genetically engineered virus has mutated the world's population. The infected are everywhere and hostile."}
 }
 
 async def async_deepseek_call(system_prompt, user_prompt):
@@ -110,6 +110,9 @@ async def generate_event(player_state, action):
     prompt = f"""
 You are an AI Game Master for a text-based post-apocalyptic survival game.
 
+=== APOCALYPSE SETTING ===
+{shelter.get("apocalypse", "Unknown apocalyptic scenario")}
+
 === BACKGROUND LORE (Passive Knowledge) ===
 {background_lore}
 *Rule: Use this ONLY for world consistency. DO NOT forcefully mention these past events in the current scene unless explicitly relevant.*
@@ -124,21 +127,28 @@ Shelter Type: {shelter.get("type")} ({shelter.get("ability")})
 === CURRENT ACTION ===
 Player Action: "{action}"
 
-INSTRUCTION: 
-Focus 90% of your attention on resolving the "Current Action" logically based on the "IMMEDIATE SCENE". Do not repeat the history. Output strictly in JSON format.
+INSTRUCTION:
+Focus 90% of your attention on resolving the "Current Action" logically based on the "IMMEDIATE SCENE" and the apocalypse setting. The events should vividly reflect the unique apocalypse theme for this zodiac sign. Do not repeat the history. Output strictly in JSON format.
 
 Requirements:
 1. eventText: Event description (make it vivid, immersive, and logically continued in English)
-2. resourceChanges: Changes in resources (food, water, tools)
-3. stateChanges: Changes in state (health)
-4. nextActions: 3 possible next actions for the player to choose from
+2. newItems: Array of items found (each item has: name, food, water, health, repair). Items go to player inventory. Only include items if the player actually found something useful. Set values to 0 if the item doesn't provide that benefit. Repair Kits (repair > 0) should be rare - only about 20% chance to find one during exploration.
+3. resourceChanges: Changes in tools only (food/water come from items now)
+4. stateChanges: Changes in health (only from combat/damage, NOT from finding items)
+5. nextActions: 3 possible next actions for the player to choose from (always include "Rest" as one option)
 
 Example Format:
 {{
-  "eventText": "You enter the dark room. Because earlier you found a flashlight, you can see clearly now. You find some canned food, but hear noises...",
-  "resourceChanges": {{ "food": 2, "water": 0, "tools": -1 }},
+  "eventText": "You search through the abandoned supermarket. Among the debris, you find some canned goods and a water bottle...",
+  "newItems": [
+    {{"name": "Canned Beans", "food": 3, "water": 0, "health": 0, "repair": 0}},
+    {{"name": "Water Bottle", "food": 0, "water": 2, "health": 0, "repair": 0}},
+    {{"name": "First Aid Kit", "food": 0, "water": 0, "health": 15, "repair": 0}},
+    {{"name": "Repair Kit", "food": 0, "water": 0, "health": 0, "repair": 30}}
+  ],
+  "resourceChanges": {{ "tools": -1 }},
   "stateChanges": {{ "health": -10 }},
-  "nextActions": ["Run away", "Fight back", "Hide"]
+  "nextActions": ["Continue searching", "Return to shelter", "Rest"]
 }}
 """
 
@@ -162,10 +172,15 @@ Example Format:
         print("Json Parse Error in main generation:", e)
         event_data = {
             "eventText": "Communication lost... You can't reach the outside world temporarily, but you can still act.",
+            "newItems": [],
             "resourceChanges": {},
             "stateChanges": {},
-            "nextActions": ["Continue exploring", "Fix shelter", "Rest"]
+            "nextActions": ["Continue exploring", "Search for supplies", "Rest"]
         }
+
+    # Ensure newItems field exists
+    if "newItems" not in event_data:
+        event_data["newItems"] = []
 
     # Now that we have the 5th action's result (event_data["eventText"]), we can form the perfect 5-turn memory!
     summary_task = None
