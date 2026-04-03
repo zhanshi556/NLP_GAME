@@ -1,0 +1,19 @@
+{
+  "id": "scene_m25_b",
+  "title": "Branch B (Day 25) — Trade for Parts",
+  "entry_conditions": [{"field": "resources.tools", "op": "<", "value": 2}],
+  "setting": {
+    "summary": "Without the right tools, you seek a deal. In the wasteland, every part has a price—and every price has teeth.",
+    "hazards": ["bad bargain", "betrayal", "resource loss"],
+    "tone": "social tension, bargaining"
+  },
+  "must_include": [
+    "An NPC encounter (merchant/scavenger/guard)",
+    "A trade-off that affects resources or safety"
+  ],
+  "allowed_actions": ["trade", "collect", "ESCAPE_MOVE", "rest"],
+  "beats": [
+    {"id": "beat_001", "goal": "negotiate", "notes": "Make the offer specific; avoid vague goodwill."},
+    {"id": "beat_002", "goal": "consequence", "notes": "Trade should have a clear cost and a clear utility."}
+  ]
+}

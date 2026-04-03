@@ -1,0 +1,19 @@
+{
+  "id": "scene_m10",
+  "title": "Day 10 Milestone — The Siren Map",
+  "trigger": {"day": 10},
+  "setting": {
+    "summary": "A rusted emergency siren wakes the wasteland. Its pattern feels deliberate—like coordinates hiding in noise.",
+    "hazards": ["hostile survivors", "structural collapse", "false signals"],
+    "tone": "urgent, investigative"
+  },
+  "must_include": [
+    "A repeating siren pattern that implies a location",
+    "A visible risk if the player stays exposed"
+  ],
+  "allowed_actions": ["explore", "collect", "fight", "ESCAPE_MOVE", "rest"],
+  "beats": [
+    {"id": "beat_001", "goal": "reveal clue", "notes": "Translate sound into a concrete lead (direction, landmark, or symbol)."},
+    {"id": "beat_002", "goal": "force a choice", "notes": "Make both branches plausible: stand and defend vs. slip away and regroup."}
+  ]
+}

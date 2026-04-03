@@ -1,0 +1,19 @@
+{
+  "id": "scene_m50",
+  "title": "Day 50 Milestone — The Dry Corridor",
+  "trigger": {"day": 50},
+  "setting": {
+    "summary": "Routes you once relied on have dried into a brittle corridor of dust. Crossing it may secure long-term supplies—or end the run.",
+    "hazards": ["dehydration", "exposure", "navigation failure"],
+    "tone": "epic, high-stakes"
+  },
+  "must_include": [
+    "A hazardous traversal or expedition setup",
+    "A clear reason why this changes the mid-game"
+  ],
+  "allowed_actions": ["explore", "collect", "build", "rest", "ESCAPE_MOVE"],
+  "beats": [
+    {"id": "beat_001", "goal": "frame expedition", "notes": "Use concrete constraints: water levels, distance, time."},
+    {"id": "beat_002", "goal": "choose risk profile", "notes": "Go out (risk expedition) vs. fortify (stay safe)."}
+  ]
+}

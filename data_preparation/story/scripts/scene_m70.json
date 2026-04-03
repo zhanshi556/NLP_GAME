@@ -1,0 +1,19 @@
+{
+  "id": "scene_m70",
+  "title": "Day 70 Milestone — The Broadcast Tower",
+  "trigger": {"day": 70},
+  "setting": {
+    "summary": "A distant broadcast tower flickers back to life. It could be a trap, a rescue, or a lie—yet it's the first organized signal in weeks.",
+    "hazards": ["organized hostile faction", "signal bait", "finale pressure"],
+    "tone": "cinematic, decisive"
+  },
+  "must_include": [
+    "A credible signal source",
+    "A final decision framing: force vs. finesse"
+  ],
+  "allowed_actions": ["fight", "trade", "ESCAPE_MOVE", "explore", "rest"],
+  "beats": [
+    {"id": "beat_001", "goal": "establish stakes", "notes": "Make it feel like a turning point, not a random encounter."},
+    {"id": "beat_002", "goal": "two endings", "notes": "Two distinct routes with different costs and flavor."}
+  ]
+}

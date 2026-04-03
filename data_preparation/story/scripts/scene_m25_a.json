@@ -1,0 +1,19 @@
+{
+  "id": "scene_m25_a",
+  "title": "Branch A (Day 25) — Build the Fix",
+  "entry_conditions": [{"field": "resources.tools", "op": ">=", "value": 2}],
+  "setting": {
+    "summary": "With enough tools, you attempt a hands-on repair. The rig fights you with rust, grit, and missing seals.",
+    "hazards": ["tool breakage", "minor injury", "wasted time"],
+    "tone": "methodical, mechanical"
+  },
+  "must_include": [
+    "A repair sequence with concrete steps",
+    "A measurable benefit (safer water / reduced future risk)"
+  ],
+  "allowed_actions": ["build", "collect", "rest"],
+  "beats": [
+    {"id": "beat_001", "goal": "repair attempt", "notes": "Tie success/partial success to tools and patience."},
+    {"id": "beat_002", "goal": "payoff", "notes": "Reward should be framed as future stability, not instant miracle."}
+  ]
+}

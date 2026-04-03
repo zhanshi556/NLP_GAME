@@ -1,0 +1,19 @@
+{
+  "id": "scene_m25",
+  "title": "Day 25 Milestone — The Broken Purifier",
+  "trigger": {"day": 25},
+  "setting": {
+    "summary": "Following the earlier lead, you find a small pre-collapse water purification rig—intact, but failing.",
+    "hazards": ["contaminated water", "mechanical failure", "ambush at choke points"],
+    "tone": "practical, problem-solving"
+  },
+  "must_include": [
+    "A purifier/filter device with a clear failure mode",
+    "A time pressure or risk if not fixed"
+  ],
+  "allowed_actions": ["build", "trade", "collect", "fight", "rest"],
+  "beats": [
+    {"id": "beat_001", "goal": "present fixable system", "notes": "Name parts and constraints (tools/parts/time)."},
+    {"id": "beat_002", "goal": "offer two routes", "notes": "Build/repair route vs. trade/barter route."}
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "id": "scene_m50_b",
+  "title": "Branch B (Day 50) — Fortify and Wait",
+  "entry_conditions": [{"field": "resources.water", "op": "<", "value": 3}],
+  "setting": {
+    "summary": "Too little water turns ambition into suicide. You choose to fortify, ration, and let the corridor pass like a storm.",
+    "hazards": ["scarcity spiral", "shelter wear", "morale collapse"],
+    "tone": "stoic, defensive"
+  },
+  "must_include": [
+    "A fortification/rationing decision",
+    "A consequence that trades short-term safety for long-term uncertainty"
+  ],
+  "allowed_actions": ["build", "rest", "trade", "collect"],
+  "beats": [
+    {"id": "beat_001", "goal": "defensive prep", "notes": "Concrete improvements: barricade, cache, water-saving hack."},
+    {"id": "beat_002", "goal": "cost", "notes": "Costs should be plausible (time, tools, small health)."}
+  ]
+}

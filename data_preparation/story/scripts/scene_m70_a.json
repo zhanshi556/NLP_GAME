@@ -1,0 +1,19 @@
+{
+  "id": "scene_m70_a",
+  "title": "Branch A (Day 70) — Go Loud",
+  "entry_conditions": [{"field": "resources.food", "op": ">=", "value": 4}],
+  "setting": {
+    "summary": "You approach with force, fueled enough to fight and push through. If someone controls the tower, you'll meet them head-on.",
+    "hazards": ["heavy injury", "major resource loss", "burned bridges"],
+    "tone": "explosive, climactic"
+  },
+  "must_include": [
+    "A confrontation at the tower",
+    "A decisive outcome (escape, takeover, or costly retreat)"
+  ],
+  "allowed_actions": ["fight", "ESCAPE_MOVE", "rest"],
+  "beats": [
+    {"id": "beat_001", "goal": "clash", "notes": "Keep enemy capabilities concrete; avoid vague 'they were strong'."},
+    {"id": "beat_002", "goal": "resolution", "notes": "Outcome should clearly change future options."}
+  ]
+}

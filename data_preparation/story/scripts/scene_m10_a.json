@@ -1,0 +1,19 @@
+{
+  "id": "scene_m10_a",
+  "title": "Branch A (Day 10) — Hold the Line",
+  "entry_conditions": [{"field": "health", "op": ">=", "value": 60}],
+  "setting": {
+    "summary": "You choose to confront the danger head-on. The siren's echo draws attention, and attention draws trouble.",
+    "hazards": ["combat injury", "tool loss", "being tracked"],
+    "tone": "gritty, confrontational"
+  },
+  "must_include": [
+    "A skirmish or direct confrontation",
+    "A tangible cost (health or tools) and a tangible gain (information or supplies)"
+  ],
+  "allowed_actions": ["fight", "build", "collect", "rest"],
+  "beats": [
+    {"id": "beat_001", "goal": "resolve confrontation", "notes": "Outcome should reference current resources/health as constraints."},
+    {"id": "beat_002", "goal": "stabilize", "notes": "End with a clear recovery/repair opportunity."}
+  ]
+}

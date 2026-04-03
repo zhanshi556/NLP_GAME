@@ -1,0 +1,62 @@
+[
+  {
+    "turn_id": "sample-0007",
+    "day": 12,
+    "user_utterance": "Escape the ruins",
+    "action": "Escape Ruins",
+    "player_state_before": {
+      "day": 12,
+      "location": "ruins",
+      "health": 62,
+      "water": 2,
+      "food": 1,
+      "tools": 1
+    },
+    "event_text": "While scavenging behind a cracked wall in the ruins, three vicious stray dogs burst out from the rubble. You abandon the search immediately and sprint through collapsed beams, scrambling down a slope of broken concrete. Only when you reach the road outside do you dare look back.",
+    "player_state_after": {
+      "day": 13,
+      "location": "outside_ruins",
+      "health": 58,
+      "water": 2,
+      "food": 1,
+      "tools": 1
+    },
+    "state_delta": {
+      "day": 1,
+      "location": "outside_ruins",
+      "health": -4
+    },
+    "consistency_flags": []
+  },
+  {
+    "turn_id": "sample-0008",
+    "day": 13,
+    "user_utterance": "Keep exploring",
+    "action": "Explore",
+    "player_state_before": {
+      "day": 13,
+      "location": "outside_ruins",
+      "health": 58,
+      "water": 2,
+      "food": 1,
+      "tools": 1
+    },
+    "event_text": "You continue searching inside the ruins for usable metal scraps, moving deeper along a half-collapsed corridor as dust burns your throat and forces you to cough.",
+    "player_state_after": {
+      "day": 14,
+      "location": "outside_ruins",
+      "health": 57,
+      "water": 1,
+      "food": 1,
+      "tools": 1
+    },
+    "state_delta": {
+      "day": 1,
+      "health": -1,
+      "water": -1
+    },
+    "consistency_flags": [
+      "narrative_location_mismatch"
+    ]
+  }
+]

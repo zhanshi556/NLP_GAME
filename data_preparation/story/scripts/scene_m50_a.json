@@ -1,0 +1,19 @@
+{
+  "id": "scene_m50_a",
+  "title": "Branch A (Day 50) — Risk the Expedition",
+  "entry_conditions": [{"field": "resources.water", "op": ">=", "value": 3}],
+  "setting": {
+    "summary": "You set out with enough water to gamble on distance. The corridor tests your planning and your nerve.",
+    "hazards": ["water loss", "injury", "being stranded"],
+    "tone": "adventurous, punishing"
+  },
+  "must_include": [
+    "A discovery that feels earned",
+    "A real cost (resource drain or health hit)"
+  ],
+  "allowed_actions": ["explore", "collect", "ESCAPE_MOVE", "rest"],
+  "beats": [
+    {"id": "beat_001", "goal": "crossing", "notes": "Show the travel as a sequence of concrete obstacles."},
+    {"id": "beat_002", "goal": "reward", "notes": "Reward can be info, safer route, or stash—keep it grounded."}
+  ]
+}

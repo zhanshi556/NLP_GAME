@@ -1,0 +1,24 @@
+[
+  {
+    "turn_id": "sample-0007",
+    "label": "consistent",
+    "type": "narrative",
+    "note": "After encountering the dogs, the player chooses to escape. The event text clearly describes leaving the ruins, and the state_delta updates location to outside_ruins, so narrative and structured state are aligned.",
+    "evidence": {
+      "action": "Escape Ruins"
+    }
+  },
+  {
+    "turn_id": "sample-0008",
+    "label": "inconsistent",
+    "type": "narrative",
+    "note": "The previous turn already escaped the ruins (location=outside_ruins), but this turn's event text says the player is 'continuing to search inside the ruins'. The narrative location conflicts with the structured state. Suggested fix: either rewrite event_text to take place outside the ruins (road/perimeter), or explicitly narrate returning to the ruins and update location accordingly.",
+    "evidence": {
+      "prev_turn_id": "sample-0007",
+      "prev_action": "Escape Ruins",
+      "curr_action": "Explore",
+      "state_before_location": "outside_ruins",
+      "curr_event_excerpt": "You continue searching inside the ruins..."
+    }
+  }
+]

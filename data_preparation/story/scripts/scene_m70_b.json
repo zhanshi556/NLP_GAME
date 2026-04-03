@@ -1,0 +1,19 @@
+{
+  "id": "scene_m70_b",
+  "title": "Branch B (Day 70) — Go Quiet",
+  "entry_conditions": [{"field": "resources.food", "op": "<", "value": 4}],
+  "setting": {
+    "summary": "You approach with caution, looking for leverage instead of a fight. A deal, a disguise, or a silent bypass.",
+    "hazards": ["betrayal", "false ally", "slow bleed"],
+    "tone": "suspenseful, tactical"
+  },
+  "must_include": [
+    "A negotiation or stealth angle",
+    "A trade that preserves life at the cost of something else"
+  ],
+  "allowed_actions": ["trade", "ESCAPE_MOVE", "explore", "rest"],
+  "beats": [
+    {"id": "beat_001", "goal": "infiltrate/negotiate", "notes": "Make the plan specific: route, cover story, or offer."},
+    {"id": "beat_002", "goal": "outcome", "notes": "Outcome should feel distinct from the loud branch."}
+  ]
+}

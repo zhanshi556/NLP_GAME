@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "comment": "Offline branching plan. Milestones are triggered by day; branch decisions use only structured state.",
+  "milestones": [10, 25, 50, 70],
+  "nodes": [
+    {"id": "scene_001_intro", "script_ref": "scene_001_intro"},
+
+    {"id": "scene_m10", "script_ref": "scene_m10"},
+    {"id": "scene_m10_a", "script_ref": "scene_m10_a"},
+    {"id": "scene_m10_b", "script_ref": "scene_m10_b"},
+
+    {"id": "scene_m25", "script_ref": "scene_m25"},
+    {"id": "scene_m25_a", "script_ref": "scene_m25_a"},
+    {"id": "scene_m25_b", "script_ref": "scene_m25_b"},
+
+    {"id": "scene_m50", "script_ref": "scene_m50"},
+    {"id": "scene_m50_a", "script_ref": "scene_m50_a"},
+    {"id": "scene_m50_b", "script_ref": "scene_m50_b"},
+
+    {"id": "scene_m70", "script_ref": "scene_m70"},
+    {"id": "scene_m70_a", "script_ref": "scene_m70_a"},
+    {"id": "scene_m70_b", "script_ref": "scene_m70_b"}
+  ],
+  "edges": [
+    {
+      "from": "scene_001_intro",
+      "choice_text": "Continue (free play until Day 10)",
+      "to": "scene_m10",
+      "conditions": [{"field": "day", "op": "==", "value": 10}]
+    },
+
+    {
+      "from": "scene_m10",
+      "choice_text": "Hold the line (fight / defend)",
+      "to": "scene_m10_a",
+      "conditions": [{"field": "health", "op": ">=", "value": 60}]
+    },
+    {
+      "from": "scene_m10",
+      "choice_text": "Slip away (escape / regroup)",
+      "to": "scene_m10_b",
+      "conditions": [{"field": "health", "op": "<", "value": 60}]
+    },
+
+    {
+      "from": "scene_m10_a",
+      "choice_text": "Advance to Day 25 milestone",
+      "to": "scene_m25",
+      "conditions": [{"field": "day", "op": "==", "value": 25}]
+    },
+    {
+      "from": "scene_m10_b",
+      "choice_text": "Advance to Day 25 milestone",
+      "to": "scene_m25",
+      "conditions": [{"field": "day", "op": "==", "value": 25}]
+    },
+
+    {
+      "from": "scene_m25",
+      "choice_text": "Build a fix (repair / craft)",
+      "to": "scene_m25_a",
+      "conditions": [{"field": "resources.tools", "op": ">=", "value": 2}]
+    },
+    {
+      "from": "scene_m25",
+      "choice_text": "Trade for parts (bargain)",
+      "to": "scene_m25_b",
+      "conditions": [{"field": "resources.tools", "op": "<", "value": 2}]
+    },
+
+    {
+      "from": "scene_m25_a",
+      "choice_text": "Advance to Day 50 milestone",
+      "to": "scene_m50",
+      "conditions": [{"field": "day", "op": "==", "value": 50}]
+    },
+    {
+      "from": "scene_m25_b",
+      "choice_text": "Advance to Day 50 milestone",
+      "to": "scene_m50",
+      "conditions": [{"field": "day", "op": "==", "value": 50}]
+    },
+
+    {
+      "from": "scene_m50",
+      "choice_text": "Risk the expedition (explore / collect)",
+      "to": "scene_m50_a",
+      "conditions": [{"field": "resources.water", "op": ">=", "value": 3}]
+    },
+    {
+      "from": "scene_m50",
+      "choice_text": "Fortify and wait (build / rest)",
+      "to": "scene_m50_b",
+      "conditions": [{"field": "resources.water", "op": "<", "value": 3}]
+    },
+
+    {
+      "from": "scene_m50_a",
+      "choice_text": "Advance to Day 70 milestone",
+      "to": "scene_m70",
+      "conditions": [{"field": "day", "op": "==", "value": 70}]
+    },
+    {
+      "from": "scene_m50_b",
+      "choice_text": "Advance to Day 70 milestone",
+      "to": "scene_m70",
+      "conditions": [{"field": "day", "op": "==", "value": 70}]
+    },
+
+    {
+      "from": "scene_m70",
+      "choice_text": "Go loud (fight)",
+      "to": "scene_m70_a",
+      "conditions": [{"field": "resources.food", "op": ">=", "value": 4}]
+    },
+    {
+      "from": "scene_m70",
+      "choice_text": "Go quiet (escape / trade)",
+      "to": "scene_m70_b",
+      "conditions": [{"field": "resources.food", "op": "<", "value": 4}]
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "id": "scene_m10_b",
+  "title": "Branch B (Day 10) — Slip Away",
+  "entry_conditions": [{"field": "health", "op": "<", "value": 60}],
+  "setting": {
+    "summary": "You retreat into cover and let the siren's clue linger in your mind. Survival first; answers later.",
+    "hazards": ["getting lost", "resource drain", "missed opportunity"],
+    "tone": "tense, stealthy"
+  },
+  "must_include": [
+    "A narrow escape sequence",
+    "A partial clue preserved (a symbol, landmark, or direction)"
+  ],
+  "allowed_actions": ["ESCAPE_MOVE", "explore", "collect", "rest"],
+  "beats": [
+    {"id": "beat_001", "goal": "escape", "notes": "Keep it concrete: routes, obstacles, sounds, and consequences."},
+    {"id": "beat_002", "goal": "preserve lead", "notes": "Lock one actionable hint for future milestone (Day 25)."}
+  ]
+}

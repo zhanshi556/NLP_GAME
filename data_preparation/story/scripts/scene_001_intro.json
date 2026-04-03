@@ -1,0 +1,25 @@
+{
+  "id": "scene_001_intro",
+  "title": "Wake-up in the Shelter",
+  "setting": {
+    "summary": "The survivor wakes up in a fragile shelter after the catastrophe. The air is unsafe, supplies are scarce, and every action has trade-offs.",
+    "hazards": ["environmental danger", "resource scarcity"],
+    "tone": "tense, grounded, survival"
+  },
+  "state_assumptions": {
+    "day_min": 1,
+    "health_min": 1
+  },
+  "beats": [
+    {
+      "id": "beat_001",
+      "goal": "establish stakes",
+      "notes": "Describe concrete surroundings and immediate needs; do not reference long history."
+    },
+    {
+      "id": "beat_002",
+      "goal": "offer actionable choices",
+      "notes": "Offer 3 options aligned with canonical actions (explore/collect/rest)."
+    }
+  ]
+}
