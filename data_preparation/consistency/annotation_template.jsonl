@@ -1,0 +1,2 @@
+{"turn_id":"example-0001","label":"consistent","type":"state","note":"State deltas applied correctly; health/resources within expected bounds.","evidence":{"action":"Explore Ruins"}}
+{"turn_id":"example-0002","label":"inconsistent","type":"narrative","note":"Event claims the shelter is destroyed, but shelter durability remains unchanged and later turns still refer to intact shelter.","evidence":{"action":"Repair Shelter"}}
